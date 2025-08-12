@@ -6,6 +6,9 @@
     <p>🥸 nombre de paciente: {{ nombrePaciente }}</p>
     <p>📖 motivo consulta: {{ motivoConsulta }}</p>
     <p>📅 fecha cita: {{ fechaCita }}</p>
+    <div class="mt-2">
+      <slot name="actions"></slot>
+    </div>
   </div>
 </template>
 

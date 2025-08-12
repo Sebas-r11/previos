@@ -2,14 +2,14 @@
   <div class="max-w-2xl mx-auto p-6">
     <h2 class="text-2xl font-bold text-blue-800 mb-6">➕ Realizar Nuevo Registro</h2>
 
-    <ReproducerForm />
+    <AgendaForm />
 
-    <router-link to="/reproducer" class="mt-6 inline-block text-sm text-blue-700 hover:underline">
+    <router-link to="/agenda" class="mt-6 inline-block text-sm text-blue-700 hover:underline">
       ← Volver a la lista
     </router-link>
   </div>
 </template>
 
 <script setup>
-import ReproducerForm from '@/components/AgendaForm.vue'
+import AgendaForm from '@/components/AgendaForm.vue'
 </script>

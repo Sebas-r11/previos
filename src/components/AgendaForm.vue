@@ -39,11 +39,29 @@
       <vue-cal :events="events" @event-create="onEventCreate" style="height: 600px" />
     </div>
 
-    <BaseButton type="submit">agendar</BaseButton>
+    <BaseButton type="submit">{{ isEdit ? 'Guardar cambios' : 'agendar' }}</BaseButton>
+    <button v-if="isEdit" type="button" class="ml-2 text-red-600 underline" @click="cancelEdit">
+      Cancelar
+    </button>
   </form>
 </template>
 
 <script setup>
+import { ref, watch } from 'vue'
+import { useAgendaStore } from '@/stores/agendaStore'
+import FormInput from './FormInput.vue'
+import BaseButton from './BaseButton.vue'
+import VueCal from 'vue-cal'
+import 'vue-cal/dist/vuecal.css'
+
+const props = defineProps({
+  initialData: {
+    type: Object,
+    default: null,
+  },
+})
+const emit = defineEmits(['save', 'cancel'])
+
 const store = useAgendaStore()
 
 const nombrePaciente = ref('')
@@ -51,38 +69,63 @@ const motivoConsulta = ref('')
 const fechaCita = ref(null)
 const profesional = ref('')
 const success = ref(false)
+const isEdit = ref(false)
 
 // Lógica para Vue Cal
 const events = ref([])
 
+watch(
+  () => props.initialData,
+  (val) => {
+    if (val) {
+      nombrePaciente.value = val.nombrePaciente || ''
+      motivoConsulta.value = val.motivoConsulta || ''
+      fechaCita.value = val.fechaCita || null
+      profesional.value = val.profesional || ''
+      isEdit.value = true
+    } else {
+      nombrePaciente.value = ''
+      motivoConsulta.value = ''
+      fechaCita.value = null
+      profesional.value = ''
+      isEdit.value = false
+    }
+  },
+  { immediate: true },
+)
+
 function onEventCreate(event) {
-  // Puedes personalizar el evento antes de agregarlo
   events.value.push(event)
 }
 
 function handleSubmit() {
   if (nombrePaciente.value && motivoConsulta.value && fechaCita.value > 0 && profesional.value) {
-    store.addReproducer({
+    const cita = {
       nombrePaciente: nombrePaciente.value,
       motivoConsulta: motivoConsulta.value,
       fechaCita: fechaCita.value,
       profesional: profesional.value,
-    })
-
-    // Agregar evento a Vue Cal
-    events.value.push({
-      start: fechaCita.value,
-      end: fechaCita.value,
-      title: `${nombrePaciente.value} - ${motivoConsulta.value} (${profesional.value})`,
-    })
-
-    nombrePaciente.value = ''
-    motivoConsulta.value = ''
-    fechaCita.value = null
-    profesional.value = ''
+    }
+    if (isEdit.value) {
+      emit('save', cita)
+    } else {
+      store.addEvent(cita)
+      events.value.push({
+        start: fechaCita.value,
+        end: fechaCita.value,
+        title: `${nombrePaciente.value} - ${motivoConsulta.value} (${profesional.value})`,
+      })
+      nombrePaciente.value = ''
+      motivoConsulta.value = ''
+      fechaCita.value = null
+      profesional.value = ''
+      success.value = true
+      setTimeout(() => (success.value = false), 3000)
+    }
   }
+}
 
-  success.value = true
-  setTimeout(() => (success.value = false), 3000)
+function cancelEdit() {
+  emit('cancel')
 }
 </script>
